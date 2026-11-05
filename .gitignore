@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
+coverage*/
+*.DotSettings.user
+_pkgs*.tgz

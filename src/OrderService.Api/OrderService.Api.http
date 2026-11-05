@@ -1,0 +1,47 @@
+# Requests de exemplo (VS / Rider / VS Code REST Client)
+@host = http://localhost:8080
+@customerId = c1a1e7b4-0000-4000-8000-000000000001
+@notebook = 8f2b6c1e-0001-4a6e-9b1a-000000000001
+@mouse = 8f2b6c1e-0002-4a6e-9b1a-000000000002
+
+### 1. Token (customer1 / Customer@123  |  admin / Admin@123)
+# @name auth
+POST {{host}}/auth/token
+Content-Type: application/json
+
+{ "username": "customer1", "password": "Customer@123" }
+
+@token = {{auth.response.body.accessToken}}
+
+### 2. Criar pedido
+# @name create
+POST {{host}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "currency": "BRL",
+  "items": [
+    { "productId": "{{notebook}}", "quantity": 1 },
+    { "productId": "{{mouse}}", "quantity": 2 }
+  ]
+}
+
+@orderId = {{create.response.body.id}}
+
+### 3. Confirmar (idempotente)
+POST {{host}}/orders/{{orderId}}/confirm
+Authorization: Bearer {{token}}
+
+### 4. Cancelar (idempotente)
+POST {{host}}/orders/{{orderId}}/cancel
+Authorization: Bearer {{token}}
+
+### 5. Consultar
+GET {{host}}/orders/{{orderId}}
+Authorization: Bearer {{token}}
+
+### 6. Listar
+GET {{host}}/orders?status=Canceled&page=1&pageSize=10
+Authorization: Bearer {{token}}

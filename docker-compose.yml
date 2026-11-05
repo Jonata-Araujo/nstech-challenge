@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - orders-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d orders"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__OrdersDb: "Host=db;Port=5432;Database=orders;Username=postgres;Password=postgres"
+      Database__ApplyMigrationsOnStartup: "true"
+      Swagger__Enabled: "true"
+      # Demo key: in a real deployment this comes from a secret store
+      Jwt__SigningKey: "docker-compose-demo-signing-key-change-me-0123456789"
+    ports:
+      - "8080:8080"
+    restart: on-failure
+
+volumes:
+  orders-db:
